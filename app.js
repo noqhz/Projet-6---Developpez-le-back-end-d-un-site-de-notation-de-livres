@@ -1,8 +1,12 @@
 const express = require('express');
 const app = express();
-const stuffRoutes = require('./routes/stuff');
+const booksRoutes = require('./routes/books');
 const userRoutes = require('./routes/user');
-const auth = require('./middleware/auth');
+// const auth = require('./middleware/auth');
+const path = require('path');
+
+// const cors = require('cors');
+// app.use(cors());
 
 // connexion à mongodb atlas database
 
@@ -24,7 +28,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/stuff', auth, stuffRoutes);
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+app.use('/api/books', booksRoutes);
 app.use('/api/auth', userRoutes);
+// app.use('/images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;
