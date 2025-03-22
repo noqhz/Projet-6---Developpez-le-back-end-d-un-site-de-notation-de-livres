@@ -59,5 +59,3 @@ const resizeImg = (req, res, next) => {
 };
 
 module.exports = { upload, resizeImg };
-
-// module.exports = multer({storage: storage}).single('image');

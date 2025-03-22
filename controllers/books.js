@@ -3,9 +3,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 
 exports.createBook = (req, res, next) => {
-  // console.log(req.body.book);
   const bookObject = JSON.parse(req.body.book); // req.body.thing -> req.body.book
-  // console.log(bookObject);
   delete bookObject._id;
   delete bookObject._userId;
   const book = new Book({
@@ -14,7 +12,6 @@ exports.createBook = (req, res, next) => {
       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
       averageRating: bookObject.ratings[0].grade
   });
-  // console.log(book);
   book.save()
   .then(() => { res.status(201).json({message: 'Objet enregistré !'})})
   .catch(error => { res.status(400).json( { error })})
@@ -56,6 +53,30 @@ exports.modifyBook = (req, res, next) => {
       .catch((error) => {
           res.status(400).json({ error });
       });
+};
+
+exports.rateBook = (req, res, next) => {
+  const { userId, rating } = req.body;
+
+  Book.findOne({ _id: req.params.id })
+    .then(book => {
+      if (!book) {
+        return res.status(404).json({ message: 'Book not found' });
+      }
+
+      const existingRating = book.ratings.find(r => r.userId === userId);
+      if (existingRating) {
+        return res.status(400).json({ message: 'User has already rated this book' });
+      }
+
+      book.ratings.push({ userId, grade: rating });
+      book.averageRating = book.ratings.reduce((sum, r) => sum + r.grade, 0) / book.ratings.length;
+
+      book.save()
+        .then(() => res.status(200).json(book))
+        .catch(error => res.status(400).json({ error }));
+    })
+    .catch(error => res.status(500).json({ error }));
 };
 
 exports.deleteBook = (req, res, next) => {
