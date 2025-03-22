@@ -16,9 +16,10 @@ const storage = multer.diskStorage({
   filename: (req, file, callback) => {
     const name = file.originalname.split(' ').join('_');
     const extension = MIME_TYPES[file.mimetype];
-    const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(4).toString('hex');
-    // ^ date + identifiant aléatoire de 8 caractères hexadécimaux
-    callback(null, name + '_' + uniqueSuffix + '.' + extension);
+    // const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(4).toString('hex');
+    // callback(null, name + '_' + uniqueSuffix + '.' + extension);
+    const uniqueName = crypto.randomUUID(); // Nom unique basé sur un UUID
+    callback(null, `${uniqueName}.${extension}`);
   }
 });
 
@@ -30,7 +31,8 @@ const resizeImg = (req, res, next) => {
   }
 
   const filePath = `images/${req.file.filename}`;
-  const outputFilePath = `images/resized_${req.file.filename.split('.')[0]}.webp`;
+  // const outputFilePath = `images/resized_${req.file.filename.split('.')[0]}.webp`;
+  const outputFilePath = `images/resized_${crypto.randomUUID()}.webp`;
 
   sharp(filePath)
     .resize({
@@ -39,7 +41,7 @@ const resizeImg = (req, res, next) => {
       fit: sharp.fit.inside,
       withoutEnlargement: true
     })
-    .webp() // conversion en WebP
+    .webp()
     .toFile(outputFilePath, (err, info) => {
       if (err) {
         return next(err);
@@ -51,8 +53,8 @@ const resizeImg = (req, res, next) => {
         }
 
         req.file.path = outputFilePath; // update chemin du fichier dans la requête
-        req.file.filename = `resized_${req.file.filename.split('.')[0]}.webp`;
-        console.log('Image resized and saved as WebP:', req.file); //
+        // req.file.filename = `resized_${req.file.filename.split('.')[0]}.webp`;
+        req.file.filename = outputFilePath.split('/').pop();
         next();
       });
     });
