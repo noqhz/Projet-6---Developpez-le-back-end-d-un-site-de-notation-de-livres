@@ -16,9 +16,7 @@ const storage = multer.diskStorage({
   filename: (req, file, callback) => {
     const name = file.originalname.split(' ').join('_');
     const extension = MIME_TYPES[file.mimetype];
-    // const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(4).toString('hex');
-    // callback(null, name + '_' + uniqueSuffix + '.' + extension);
-    const uniqueName = crypto.randomUUID(); // Nom unique basé sur un UUID
+    const uniqueName = crypto.randomUUID(); // nom unique basé sur un UUID
     callback(null, `${uniqueName}.${extension}`);
   }
 });
@@ -31,7 +29,6 @@ const resizeImg = (req, res, next) => {
   }
 
   const filePath = `images/${req.file.filename}`;
-  // const outputFilePath = `images/resized_${req.file.filename.split('.')[0]}.webp`;
   const outputFilePath = `images/resized_${crypto.randomUUID()}.webp`;
 
   sharp(filePath)
@@ -53,7 +50,6 @@ const resizeImg = (req, res, next) => {
         }
 
         req.file.path = outputFilePath; // update chemin du fichier dans la requête
-        // req.file.filename = `resized_${req.file.filename.split('.')[0]}.webp`;
         req.file.filename = outputFilePath.split('/').pop();
         next();
       });
